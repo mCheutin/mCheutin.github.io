@@ -5,53 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Scanner</title>
     <style>
-        body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        #video-container {
-            position: relative;
+        #video {
             width: 100%;
             max-width: 600px;
-        }
-        #qr-canvas {
-            width: 100%;
+            margin: auto;
         }
     </style>
 </head>
 <body>
-    <div id="video-container">
-        <video id="qr-canvas" playsinline></video>
-    </div>
+    <h1>QR Code Scanner</h1>
+    <video id="video" playsinline></video>
 
-    <script src="https://cdn.rawgit.com/sitepoint-editors/jsqrcode/gh-pages/src/qr_packed.js"></script>
-    <script src="https://cdn.rawgit.com/edi9999/jsqrcode/master/src/qr_packed.js"></script>
-    <script src="https://cdn.rawgit.com/dwa012/html5-qrcode/master/minified/html5-qrcode.min.js"></script>
-    
     <script>
-        const video = document.getElementById('qr-canvas');
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const video = document.getElementById('video');
 
-        const qrCodeScanner = new Html5Qrcode('qr-canvas');
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then((stream) => {
+                    video.srcObject = stream;
+                })
+                .catch((error) => {
+                    console.error('Error accessing camera: ', error);
+                });
 
-        qrCodeScanner.start(
-            { facingMode: 'environment' },
-            {
-                fps: 10,
-                qrbox: 250
-            },
-            (decodedText) => {
-                alert('Scanned: ' + decodedText);
-                // Vous pouvez effectuer des actions avec le contenu scanné ici
-                qrCodeScanner.stop();
-            },
-            (errorMessage) => {
-                console.error(errorMessage);
-            }
-        );
+            video.addEventListener('loadedmetadata', (event) => {
+                video.play();
+
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                setInterval(() => {
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                    if (code) {
+                        console.log('QR Code detected:', code.data);
+                        // Vous pouvez ajouter ici le code à exécuter lorsque le QR code est détecté.
+                        // Par exemple, rediriger l'utilisateur vers une URL spécifique.
+                        // window.location.href = code.data;
+                    }
+                }, 1000);
+            });
+
+            // Chargement de la bibliothèque jsQR (https://github.com/cozmo/jsQR)
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/jsqr/1.0.0/jsQR.min.js';
+            script.async = true;
+            document.head.appendChild(script);
+        });
     </script>
 </body>
 </html>
