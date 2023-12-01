@@ -9,45 +9,60 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            font-family: 'Arial', sans-serif;
         }
+
         #video-container {
             position: relative;
             width: 100%;
             max-width: 600px;
+            margin: auto; /* Centrer la vidéo */
         }
+
         #qr-canvas {
             position: absolute;
+            width: 100%;
+        }
+
+        @media only screen and (max-width: 600px) {
+            /* Styles spécifiques pour les écrans de largeur maximale de 600px */
+            #video-container {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div id="video-container">
-        <video id="qr-canvas" width="100%"></video>
+        <video id="qr-canvas" width="100%" playsinline></video>
     </div>
 
-    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <script src="https://cdn.rawgit.com/sitepoint-editors/jsqrcode/gh-pages/src/qr_packed.js"></script>
+    <script src="https://cdn.rawgit.com/edi9999/jsqrcode/master/src/qr_packed.js"></script>
+    <script src="https://cdn.rawgit.com/dwa012/html5-qrcode/master/minified/html5-qrcode.min.js"></script>
+    
     <script>
         const video = document.getElementById('qr-canvas');
-        
-        // Use the back camera by default
-        const scanner = new Instascan.Scanner({ video: video, mirror: false });
 
-        scanner.addListener('scan', function (content) {
-            alert('Scanned: ' + content);
-            // You can perform actions with the scanned content here
-        });
+        const qrCodeScanner = new Html5Qrcode('qr-canvas');
 
-        Instascan.Camera.getCameras().then(function (cameras) {
-            if (cameras.length > 0) {
-                scanner.start(cameras[0]);
-            } else {
-                console.error('No cameras found.');
+        qrCodeScanner.start(
+            { facingMode: 'environment' },
+            {
+                fps: 10,
+                qrbox: 250
+            },
+            (decodedText) => {
+                alert('Scanned: ' + decodedText);
+                // You can perform actions with the scanned content here
+                qrCodeScanner.stop();
+            },
+            (errorMessage) => {
+                console.error(errorMessage);
             }
-        }).catch(function (e) {
-            console.error(e);
-        });
+        );
     </script>
 </body>
 </html>
