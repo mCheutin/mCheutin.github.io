@@ -9,34 +9,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
-            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
         }
-
         #video-container {
             position: relative;
-            width: 70%; /* Nouvelle règle pour adapter à 70% de la largeur */
-            max-width: 600px;
-            margin: auto; /* Centrer la vidéo */
-        }
-
-        #qr-canvas {
-            position: absolute;
             width: 100%;
+            max-width: 600px;
         }
-
-        @media only screen and (max-width: 600px) {
-            /* Styles spécifiques pour les écrans de largeur maximale de 600px */
-            #video-container {
-                max-width: 100%;
-            }
+        #qr-canvas {
+            width: 100%;
         }
     </style>
 </head>
 <body>
     <div id="video-container">
-        <video id="qr-canvas" width="100%" playsinline></video>
+        <video id="qr-canvas" playsinline></video>
     </div>
 
     <script src="https://cdn.rawgit.com/sitepoint-editors/jsqrcode/gh-pages/src/qr_packed.js"></script>
@@ -56,7 +45,7 @@
             },
             (decodedText) => {
                 alert('Scanned: ' + decodedText);
-                // You can perform actions with the scanned content here
+                // Vous pouvez effectuer des actions avec le contenu scanné ici
                 qrCodeScanner.stop();
             },
             (errorMessage) => {
