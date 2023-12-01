@@ -1,61 +1,67 @@
-
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Scanner</title>
     <style>
-        #video {
+        #interactive {
+            position: relative;
+        }
+
+        #video,
+        canvas {
             width: 100%;
-            max-width: 600px;
-            margin: auto;
+            height: auto;
         }
     </style>
 </head>
 <body>
-    <h1>QR Code Scanner</h1>
-    <video id="video" playsinline></video>
+    <div id="interactive" class="viewport">
+        <video autoplay="true" id="video"></video>
+        <canvas id="canvas"></canvas>
+    </div>
 
+    <script src="https://cdn.rawgit.com/serratus/quaggaJS/master/dist/quagga.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const video = document.getElementById('video');
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#video'),
+                constraints: {
+                    facingMode: "environment"
+                },
+            },
+            decoder: {
+                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader", "2of5_reader", "code_93_reader"],
+                debug: {
+                    showCanvas: true,
+                    showPatches: true,
+                    showFoundPatches: true,
+                    showSkeleton: true,
+                    showLabels: true,
+                    showPatchLabels: true,
+                    showRemainingPatchLabels: true,
+                    boxFromPatches: {
+                        showTransformed: true,
+                        showTransformedBox: true,
+                        showBB: true,
+                    },
+                },
+            },
+        }, function (err) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            console.log("Initialization finished. Ready to start");
+            Quagga.start();
+        });
 
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                .then((stream) => {
-                    video.srcObject = stream;
-                })
-                .catch((error) => {
-                    console.error('Error accessing camera: ', error);
-                });
-
-            video.addEventListener('loadedmetadata', (event) => {
-                video.play();
-
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-
-                setInterval(() => {
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-                    if (code) {
-                        console.log('QR Code detected:', code.data);
-                        // Vous pouvez ajouter ici le code à exécuter lorsque le QR code est détecté.
-                        // Par exemple, rediriger l'utilisateur vers une URL spécifique.
-                        // window.location.href = code.data;
-                    }
-                }, 1000);
-            });
-
-            // Chargement de la bibliothèque jsQR (https://github.com/cozmo/jsQR)
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/jsqr/1.0.0/jsQR.min.js';
-            script.async = true;
-            document.head.appendChild(script);
+        Quagga.onDetected(function (result) {
+            var code = result.codeResult.code;
+            window.location.href = code; // Redirige vers l'URL du code QR
         });
     </script>
 </body>
