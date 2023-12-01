@@ -1,3 +1,6 @@
+Bien sûr, pour adapter la taille de la fenêtre de la caméra à 70% de la largeur de l'écran du téléphone, vous pouvez ajouter une règle CSS supplémentaire. Voici la modification apportée au code :
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +19,7 @@
 
         #video-container {
             position: relative;
-            width: 100%;
+            width: 70%; /* Nouvelle règle pour adapter à 70% de la largeur */
             max-width: 600px;
             margin: auto; /* Centrer la vidéo */
         }
@@ -66,3 +69,6 @@
     </script>
 </body>
 </html>
+```
+
+Avec cette modification, la largeur du conteneur vidéo (`#video-container`) est fixée à 70% de la largeur de l'écran. N'hésitez pas à ajuster cette valeur selon vos besoins.
