@@ -3,44 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scanner QR Code</title>
-    <style>
-        #video-container {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            margin: auto;
-        }
-
-        #scanner-video {
-            width: 100%;
-            height: auto;
-        }
-
-        #result {
-            margin-top: 20px;
-        }
-    </style>
+    <title>Scanner QR Code 34</title>
+    <script src="https://cdn.rawgit.com/serratus/quaggaJS/master/dist/quagga.min.js"></script>
 </head>
 <body>
-    <div id="video-container">
-        <video id="scanner-video"></video>
-    </div>
-    <div id="result"></div>
-
-    <script src="https://cdn.rawgit.com/serratus/quaggaJS/0.12.1/dist/quagga.min.js"></script>
+    <h1>Scanner QR Code</h1>
+    <div id="interactive" class="viewport"></div>
     <script>
-        // Configuration de QuaggaJS
+        // Configuration de Quagga
         Quagga.init({
             inputStream: {
                 name: "Live",
                 type: "LiveStream",
-                target: document.querySelector("#scanner-video"),
+                target: document.querySelector("#interactive"),
             },
             decoder: {
                 readers: ["qrcode"],
             },
-        }, function(err) {
+        }, function (err) {
             if (err) {
                 console.error(err);
                 return;
@@ -48,13 +28,10 @@
             Quagga.start();
         });
 
-        // Événement de détection d'un code QR
-        Quagga.onDetected(function(result) {
+        // Événement de détection de code-barres
+        Quagga.onDetected(function (result) {
             var code = result.codeResult.code;
-            document.getElementById("result").innerHTML = "Code QR détecté : " + code;
-
-            // Ouvrir automatiquement la page web associée au code QR
-            window.location.href = code;
+            window.location.href = code; // Rediriger vers le lien du QR code
         });
     </script>
 </body>
