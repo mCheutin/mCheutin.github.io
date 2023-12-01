@@ -3,65 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emargement JPO</title>
+    <title>Scanner QR Code</title>
     <style>
-        #interactive {
+        #video-container {
             position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
         }
 
-        #video,
-        canvas {
+        #scanner-video {
             width: 100%;
             height: auto;
+        }
+
+        #result {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div id="interactive" class="viewport">
-        <video autoplay="true" id="video"></video>
-        <canvas id="canvas"></canvas>
+    <div id="video-container">
+        <video id="scanner-video"></video>
     </div>
+    <div id="result"></div>
 
-    <script src="https://cdn.rawgit.com/serratus/quaggaJS/master/dist/quagga.min.js"></script>
+    <script src="https://cdn.rawgit.com/serratus/quaggaJS/0.12.1/dist/quagga.min.js"></script>
     <script>
+        // Configuration de QuaggaJS
         Quagga.init({
             inputStream: {
                 name: "Live",
                 type: "LiveStream",
-                target: document.querySelector('#video'),
-                constraints: {
-                    facingMode: "environment"
-                },
+                target: document.querySelector("#scanner-video"),
             },
             decoder: {
-                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader", "2of5_reader", "code_93_reader"],
-                debug: {
-                    showCanvas: true,
-                    showPatches: true,
-                    showFoundPatches: true,
-                    showSkeleton: true,
-                    showLabels: true,
-                    showPatchLabels: true,
-                    showRemainingPatchLabels: true,
-                    boxFromPatches: {
-                        showTransformed: true,
-                        showTransformedBox: true,
-                        showBB: true,
-                    },
-                },
+                readers: ["qrcode"],
             },
-        }, function (err) {
+        }, function(err) {
             if (err) {
                 console.error(err);
                 return;
             }
-            console.log("Initialization finished. Ready to start");
             Quagga.start();
         });
 
-        Quagga.onDetected(function (result) {
+        // Événement de détection d'un code QR
+        Quagga.onDetected(function(result) {
             var code = result.codeResult.code;
-            window.location.href = code; // Redirige vers l'URL du code QR
+            document.getElementById("result").innerHTML = "Code QR détecté : " + code;
+
+            // Ouvrir automatiquement la page web associée au code QR
+            window.location.href = code;
         });
     </script>
 </body>
