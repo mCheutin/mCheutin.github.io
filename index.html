@@ -4,9 +4,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>QR Code Scanner Example</title>
-
-	
+    <title>Emargement JPO</title>
   </head>
   
   <body class="cont">
@@ -16,9 +14,9 @@
     <article class="pad-2">
         <section>
             <div class="frm-grp txt-cntr">
-				<label class="disp-blck">Choose camera:</label>
-				<select id="webcameraChanger" onchange="cameraChange($(this).val());" class="frm-ctrl mar-btm-2"></select>
-			</div>
+                <label class="disp-blck">Choose camera:</label>
+                <select id="webcameraChanger" onchange="cameraChange($(this).val());" class="frm-ctrl mar-btm-2"></select>
+            </div>
             <!-- webcamera view component -->
             <video id="webcameraPreview" playsinline autoplay controls muted loop style="width: 100%;"></video>
         </section>
@@ -49,9 +47,9 @@
 
         initCamera(cameraId);
 
-
         scanStart(function (data){
-            alert(data);
+            // Ouvre le lien après avoir scanné le code QR
+            window.location.href = data;
         });
 
     </script>
