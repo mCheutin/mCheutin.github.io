@@ -16,20 +16,20 @@
 
         #video-container {
             position: relative;
-            width: 50%;
+            width: 100%;
             max-width: 600px;
             margin: auto; /* Centrer la vidéo */
         }
 
         #qr-canvas {
             position: absolute;
-            width: 50%;
+            width: 100%;
         }
 
         @media only screen and (max-width: 600px) {
             /* Styles spécifiques pour les écrans de largeur maximale de 600px */
             #video-container {
-                max-width: 50%;
+                max-width: 100%;
             }
         }
     </style>
@@ -39,24 +39,30 @@
         <video id="qr-canvas" width="100%" playsinline></video>
     </div>
 
-    <script src="https://cdn.rawgit.com/edi9999/html5-qrcode/master/minified/html5-qrcode.min.js"></script>
+    <script src="https://cdn.rawgit.com/sitepoint-editors/jsqrcode/gh-pages/src/qr_packed.js"></script>
+    <script src="https://cdn.rawgit.com/edi9999/jsqrcode/master/src/qr_packed.js"></script>
+    <script src="https://cdn.rawgit.com/dwa012/html5-qrcode/master/minified/html5-qrcode.min.js"></script>
     
     <script>
         const video = document.getElementById('qr-canvas');
 
         const qrCodeScanner = new Html5Qrcode('qr-canvas');
 
-        // Spécifiez 'environment' pour utiliser la caméra arrière
-        qrCodeScanner.start({ facingMode: 'environment' }, {
-            fps: 10,
-            qrbox: 250
-        }, (decodedText) => {
-            alert('Scanned: ' + decodedText);
-            // Vous pouvez effectuer des actions avec le contenu scanné ici
-            qrCodeScanner.stop();
-        }, (errorMessage) => {
-            console.error(errorMessage);
-        });
+        qrCodeScanner.start(
+            { facingMode: 'environment' },
+            {
+                fps: 10,
+                qrbox: 250
+            },
+            (decodedText) => {
+                alert('Scanned: ' + decodedText);
+                // You can perform actions with the scanned content here
+                qrCodeScanner.stop();
+            },
+            (errorMessage) => {
+                console.error(errorMessage);
+            }
+        );
     </script>
 </body>
 </html>
