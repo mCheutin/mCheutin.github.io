@@ -3,15 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emargement JPO</title>
+    <title>QR Code Scanner</title>
+    <style>
+        #preview-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        #qr-preview {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #checkbox-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: green;
+            display: none;
+        }
+    </style>
     <script src="https://rawgit.com/LazarSoft/jsqrcode/master/0.6.2/jsqrcode.js"></script>
     <!-- Ajouter d'autres scripts nécessaires pour le QR Code Scanner -->
 </head>
 <body>
-    <h1>Emargement JPO</h1>
-    <video id="qr-video" width="100%" height="100%" style="object-fit: cover;"></video>
+    <h1>QR Code Scanner</h1>
+    
+    <div id="preview-container">
+        <video id="qr-video" width="100%" height="100%" style="object-fit: cover;"></video>
+        <canvas id="qr-preview" style="display: none;"></canvas>
+        <span id="checkbox-icon">&#10003;</span>
+    </div>
+    
     <script>
         const video = document.getElementById("qr-video");
+        const previewCanvas = document.getElementById("qr-preview");
+        const checkboxIcon = document.getElementById("checkbox-icon");
 
         function onSuccess(stream) {
             video.srcObject = stream;
@@ -83,6 +114,8 @@
                         },
                     }).then((updateResponse) => {
                         console.log('Checkbox updated successfully:', updateResponse);
+                        // Show checkbox icon
+                        checkboxIcon.style.display = 'block';
                     }).catch((updateError) => {
                         console.error('Error updating checkbox:', updateError);
                     });
