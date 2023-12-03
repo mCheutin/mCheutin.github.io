@@ -54,66 +54,101 @@
             
             // Mettre à jour la case à cocher dans Google Sheets
             updateCheckbox(email);
-            alert(data + "Scanné avec succès")
+            alert("Scanné avec succès")
         });
 
-        function updateCheckbox(email) {
-            gapi.load('client:auth2', initClient);
 
-            function initClient() {
-                gapi.client.init({
-                    apiKey: "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",
-                    clientId: "549585339883-3p01j2inukmo7nrg9tnpdglisg1splrf.apps.googleusercontent.com",
-                    discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
-                    scope: "https://www.googleapis.com/auth/spreadsheets",
-                }).then(function () {
-                    return gapi.auth2.getAuthInstance().signIn();
-                }).then(function () {
-                    findRowByEmail(email);
-                });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Emargement JPO</title>
+</head>
+
+<body class="cont">
+    <h3 class="txt-cntr mar-top-2">JPO du 09/12/23</h3>
+
+    <article class="pad-2">
+        <section>
+            <div class="frm-grp txt-cntr">
+                <label class="disp-blck">Choisissez la caméra :</label>
+                <select id="webcameraChanger" onchange="cameraChange($(this).val());" class="frm-ctrl mar-btm-2"></select>
+            </div>
+            <!-- Composant de vue de la caméra Web -->
+            <video id="webcameraPreview" playsinline autoplay controls muted loop style="width: 100%;"></video>
+        </section>
+    </article>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="../../external/adapter.min.js"></script>
+    <script type="text/javascript" src="../../external/instascan.js"></script>
+    <script type="text/javascript" src="../../src/QrCodeScanner.js"></script>
+    <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
+
+    <script type="text/javascript">
+        var videoComponent = $("#webcameraPreview");
+        var webcameraChanger = $("#webcameraChanger");
+        var options = {};
+        var cameraId = 0;
+
+        // Initialise les options pour le scanner
+        options = initVideoObjectOptions("webcameraPreview");
+
+        // Initialise le scanner
+        initScanner(options);
+
+        // Initialise les caméras disponibles
+        initAvaliableCameras(
+            webcameraChanger,
+            function () {
+                cameraId = parseInt(getSelectedCamera(webcameraChanger));
             }
+        );
 
-            function findRowByEmail(email) {
-                gapi.client.sheets.spreadsheets.values.get({
-                    spreadsheetId: "1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ",
-                    range: "G:I",
-                }).then(function (response) {
-                    const values = response.result.values;
-                    const rowIndex = findRowIndexByEmail(values, email);
+        // Initialise la caméra sélectionnée
+        initCamera(cameraId);
 
-                    if (rowIndex !== -1) {
-                        updateCheckboxForRow(rowIndex + 1);
-                    } else {
-                        console.error("Adresse e-mail non trouvée dans la feuille de calcul.");
-                    }
-                });
-            }
+        // Initialise l'API Google Sheets
+        gapi.load('client', initSheetsAPI);
 
-            function findRowIndexByEmail(values, email) {
-                for (let i = 0; i < values.length; i++) {
-                    if (values[i][0] === email) {
-                        return i;
-                    }
+        function initSheetsAPI() {
+            gapi.client.init({
+                apiKey: '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',
+                clientId: '549585339883-3p01j2inukmo7nrg9tnpdglisg1splrf.apps.googleusercontent.com',
+                discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+                scope: "https://www.googleapis.com/auth/spreadsheets"
+            }).then(function () {
+                // ID de votre feuille de calcul
+                var spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
+
+                // Fonction pour ajouter des données à la feuille de calcul
+                function appendDataToSheet(email) {
+                    var values = [
+                        [email]
+                    ];
+                    var body = {
+                        values: values
+                    };
+                    gapi.client.sheets.spreadsheets.values.append({
+                        spreadsheetId: spreadsheetId,
+                        range: 'scan', // Changez avec le nom de votre feuille
+                        valueInputOption: 'RAW',
+                        resource: body
+                    }).then(function (response) {
+                        console.log(response);
+                    }, function (reason) {
+                        console.error('Erreur : ' + reason.result.error.message);
+                    });
                 }
-                return -1;
-            }
 
-            function updateCheckboxForRow(rowIndex) {
-                gapi.client.sheets.spreadsheets.values.update({
-                    spreadsheetId: "1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ",
-                    range: `I${rowIndex}:I${rowIndex}`,
-                    valueInputOption: "RAW",
-                    resource: {
-                        values: [
-                            [true]
-                        ]
-                    }
-                }).then(function (response) {
-                    console.log("Case à cocher mise à jour avec succès pour l'adresse e-mail :", email);
-                }, function (reason) {
-                    console.error("Erreur lors de la mise à jour de la case à cocher :", reason.result.error.message);
+                // Démarre la numérisation
+                scanStart(function (data) {
+                    // Supposons que les données scannées soient une adresse e-mail
+                    appendDataToSheet(data + " a été enregistré avec succès");
+                    alert(data)
                 });
-            }
+            });
         }
     </script>
 </body>
