@@ -4,154 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Scanner</title>
-    <style>
-        #preview-container {
-            position: relative;
-            width: 100%;
-            height: auto;
-            margin-bottom: 20px;
-        }
-
-        #qr-preview {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        #checkbox-icon {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 24px;
-            color: green;
-            display: none;
-        }
-    </style>
-    <script src="https://rawgit.com/LazarSoft/jsqrcode/master/0.6.2/jsqrcode.js"></script>
-    <!-- Ajouter d'autres scripts nécessaires pour le QR Code Scanner -->
+    <script src="https://cdn.rawgit.com/serratus/quaggaJS/master/dist/quagga.min.js"></script>
 </head>
 <body>
     <h1>QR Code Scanner</h1>
-    
-    <div id="preview-container">
-        <video id="qr-video" width="100%" height="100%" style="object-fit: cover;"></video>
-        <canvas id="qr-preview" style="display: none;"></canvas>
-        <span id="checkbox-icon">&#10003;</span>
-    </div>
-    
+    <video id="preview" style="width:100%"></video>
+
     <script>
-        const video = document.getElementById("qr-video");
-        const previewCanvas = document.getElementById("qr-preview");
-        const checkboxIcon = document.getElementById("checkbox-icon");
+        // Replace with your Google Sheets API key and client ID
+        // Replace with your Google Sheets API key and client ID
+        const apiKey = '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';
+        const clientId = '549585339883-3p01j2inukmo7nrg9tnpdglisg1splrf.apps.googleusercontent.com';
+        const spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
 
-        function onSuccess(stream) {
-            video.srcObject = stream;
-            const decoder = new Worker('https://rawgit.com/LazarSoft/jsqrcode/master/0.6.2/qrworker.js');
-            
-            decoder.postMessage({ action: 'setInputStream', data: stream });
-            decoder.onmessage = (event) => {
-                if (event.data && event.data.type === 'qrcode') {
-                    const email = event.data.data;
-                    updateCheckbox(email);
-                }
-            };
+
+        // Initialize Google Sheets API
+        gapi.load('client', initGoogleSheets);
+
+        function initGoogleSheets() {
+            gapi.client.init({
+                'apiKey': apiKey,
+                'clientId': clientId,
+                'scope': 'https://www.googleapis.com/auth/spreadsheets',
+            }).then(function () {
+                console.log('Google Sheets API initialized');
+            });
         }
 
-        function onError(error) {
-            console.error('Error accessing camera', error);
-        }
+        // Initialize QuaggaJS
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#preview'),
+                constraints: {
+                    width: 640,
+                    height: 480,
+                },
+            },
+            decoder: {
+                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader", "2of5_reader", "code_93_reader"],
+            },
+        }, function (err) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            Quagga.start();
+        });
+
+        Quagga.onDetected(function (result) {
+            const email = result.code; // Assuming the QR code contains the email address
+
+            // Update Google Sheets checkbox in column I
+            updateCheckbox(email);
+        });
 
         function updateCheckbox(email) {
-            // Code to update the Google Sheets checkbox based on the email
-            console.log('Email:', email);
-
-            // Example: Use Google Sheets API to update the checkbox
-            // Call the function to update the sheet with proper authentication
-            authorizeAndCallAPI(email);
-        }
-
-        function authorizeAndCallAPI(email) {
-            gapi.auth.authorize({
-                'client_id': '549585339883-3p01j2inukmo7nrg9tnpdglisg1splrf.apps.googleusercontent.com',
-                'scope': 'https://www.googleapis.com/auth/spreadsheets',
-                'immediate': false
-            }, (authResult) => {
-                if (authResult && !authResult.error) {
-                    // API call with the authorized token
-                    updateSheetCheckbox(authResult.access_token, email);
-                } else {
-                    console.error('Authorization failed:', authResult.error);
-                }
-            });
-        }
-
-        function updateSheetCheckbox(accessToken, email) {
-            // Replace '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ' with your actual spreadsheet ID
-            const spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
-            const range = 'Sheet1!G:I'; // Assuming your data is in columns G, H, I
-
-            // Retrieve the current values in the specified range
             gapi.client.sheets.spreadsheets.values.get({
                 spreadsheetId: spreadsheetId,
-                range: range,
-            }).then((response) => {
-                const values = response.result.values;
-
-                // Find the row where the email matches
-                const rowIndex = values.findIndex(row => row[0] === email);
+                range: 'Sheet1!G:I', // Adjust the sheet name and range as needed
+            }).then(function (response) {
+                const data = response.result.values;
+                const rowIndex = data.findIndex(row => row[0] === email);
 
                 if (rowIndex !== -1) {
-                    // Update the checkbox in column I for the found row
-                    values[rowIndex][2] = 'TRUE'; // Assuming checkbox value is 'TRUE'
-                    
-                    // Make the update request
+                    // Checkbox is in column I (index 2)
                     gapi.client.sheets.spreadsheets.values.update({
                         spreadsheetId: spreadsheetId,
-                        range: range,
+                        range: `Sheet1!I${rowIndex + 1}`,
                         valueInputOption: 'RAW',
-                        resource: {
-                            values: values,
-                        },
-                    }).then((updateResponse) => {
-                        console.log('Checkbox updated successfully:', updateResponse);
-                        // Show checkbox icon
-                        checkboxIcon.style.display = 'block';
-                    }).catch((updateError) => {
-                        console.error('Error updating checkbox:', updateError);
+                        values: [[true]],
+                    }).then(function (response) {
+                        console.log('Checkbox updated successfully');
+                    }, function (reason) {
+                        console.error('Error: ' + reason.result.error.message);
                     });
-                } else {
-                    console.error('Email not found in the sheet:', email);
                 }
-            }).catch((error) => {
-                console.error('Error retrieving values from sheet:', error);
             });
         }
-
-        // Load the Google API client library
-        function loadGoogleApiClient() {
-            gapi.load('client:auth2', initGoogleApiClient);
-        }
-
-        // Initialize the Google API client
-        function initGoogleApiClient() {
-            gapi.client.init({
-                apiKey: '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',
-                clientId: '549585339883-3p01j2inukmo7nrg9tnpdglisg1splrf.apps.googleusercontent.com',
-                discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-                scope: 'https://www.googleapis.com/auth/spreadsheets',
-            }).then(() => {
-                // API client is initialized, you can now call API functions
-                console.log('Google API client initialized');
-            });
-        }
-
-        // Load the Google API client library on window load
-        window.onload = function () {
-            loadGoogleApiClient();
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                .then(onSuccess)
-                .catch(onError);
-        };
     </script>
     <script src="https://apis.google.com/js/api.js"></script>
 </body>
