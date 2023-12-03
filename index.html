@@ -12,10 +12,16 @@
             margin-bottom: 20px;
         }
 
+        #qr-video {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+
         #qr-preview {
             width: 100%;
             height: auto;
-            display: block;
+            display: none;
         }
 
         #checkbox-icon {
@@ -24,11 +30,15 @@
             right: 10px;
             font-size: 24px;
             color: green;
-            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #checkbox-icon.checked {
+            opacity: 1;
         }
     </style>
     <script src="https://rawgit.com/LazarSoft/jsqrcode/master/0.6.2/jsqrcode.js"></script>
-    <!-- Ajouter d'autres scripts nécessaires pour le QR Code Scanner -->
 </head>
 <body>
     <h1>QR Code Scanner</h1>
@@ -44,21 +54,23 @@
         const previewCanvas = document.getElementById("qr-preview");
         const checkboxIcon = document.getElementById("checkbox-icon");
 
-        function onSuccess(stream) {
-            video.srcObject = stream;
-            const decoder = new Worker('https://rawgit.com/LazarSoft/jsqrcode/master/0.6.2/qrworker.js');
-            
-            decoder.postMessage({ action: 'setInputStream', data: stream });
-            decoder.onmessage = (event) => {
-                if (event.data && event.data.type === 'qrcode') {
-                    const email = event.data.data;
-                    updateCheckbox(email);
-                }
-            };
-        }
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+                
+                const decoder = new Worker('https://rawgit.com/LazarSoft/jsqrcode/master/0.6.2/qrworker.js');
+                decoder.postMessage({ action: 'setInputStream', data: stream });
 
-        function onError(error) {
-            console.error('Error accessing camera', error);
+                decoder.onmessage = (event) => {
+                    if (event.data && event.data.type === 'qrcode') {
+                        const email = event.data.data;
+                        updateCheckbox(email);
+                    }
+                };
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+            }
         }
 
         function updateCheckbox(email) {
@@ -82,7 +94,10 @@
                 } else {
                     console.error('Authorization failed:', authResult.error);
                 }
-            });
+                checkboxIcon.classList.add('checked');
+                setTimeout(() => {
+                checkboxIcon.classList.remove('checked');
+                }, 2000);
         }
 
         function updateSheetCheckbox(accessToken, email) {
@@ -151,6 +166,10 @@
             
             // Check if the browser supports the MediaDevices API
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+<<<<<<< HEAD
+                startCamera();
+=======
+>>>>>>> 940093778ff0d6a17d05e9b57f3631b0d7d40afb
                 navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
                     .then(onSuccess)
                     .catch(onError);
