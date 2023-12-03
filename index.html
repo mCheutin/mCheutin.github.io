@@ -1,20 +1,10 @@
-D'accord, je vais simplifier le code en utilisant une autre bibliothèque pour effectuer la requête vers l'API Google Sheets. Nous allons utiliser la bibliothèque `axios` pour effectuer une requête HTTP POST vers l'API Google Sheets.
-
-Assurez-vous d'ajouter la bibliothèque `axios` à votre projet en incluant la balise script suivante dans votre en-tête HTML ou en installant la bibliothèque via npm ou yarn.
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-```
-
-Voici une version modifiée du code pour écrire dans la feuille "enregistrement" de votre spreadsheet. Remplacez également 'VOTRE_CLÉ_API' par votre clé API.
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Emargement JPO</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body class="cont">
@@ -103,6 +93,3 @@ Voici une version modifiée du code pour écrire dans la feuille "enregistrement
     </script>
 </body>
 </html>
-```
-
-Cette version utilise la bibliothèque axios pour effectuer une requête HTTP POST vers l'API Google Sheets. Assurez-vous de remplacer 'VOTRE_CLÉ_API' par votre clé API. Si vous rencontrez des problèmes, consultez la console du navigateur pour voir les messages d'erreur.
