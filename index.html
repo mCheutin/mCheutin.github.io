@@ -1,23 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Emargement JPO</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-</head>
-
-<body class="cont">
+  </head>
+  
+  <body class="cont">
     <h3 class="txt-cntr mar-top-2">JPO du 09/12/23</h3>
 
     <article class="pad-2">
         <section>
             <div class="frm-grp txt-cntr">
-                <label class="disp-blck">Choisissez la caméra :</label>
+                <label class="disp-blck">Choose camera:</label>
                 <select id="webcameraChanger" onchange="cameraChange($(this).val());" class="frm-ctrl mar-btm-2"></select>
             </div>
-            <!-- Composant de vue de la caméra Web -->
             <video id="webcameraPreview" playsinline autoplay controls muted loop style="width: 100%;"></video>
         </section>
     </article>
@@ -26,13 +23,11 @@
     <script type="text/javascript" src="../../external/adapter.min.js"></script>
     <script type="text/javascript" src="../../external/instascan.js"></script>
     <script type="text/javascript" src="../../src/QrCodeScanner.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type="text/javascript">
-        // HTML video component for web camera
         var videoComponent = $("#webcameraPreview");
-        // HTML select component for cameras change
         var webcameraChanger = $("#webcameraChanger");
         var options = {};
-        // init options for scanner
         options = initVideoObjectOptions("webcameraPreview");
         var cameraId = 0;
 
@@ -47,12 +42,15 @@
 
         initCamera(cameraId);
 
-        // Function to append data to Google Sheets
+        scanStart(function (data){
+            appendDataToSheet(data);
+        });
+
         function appendDataToSheet(email) {
             console.log('Tentative d\'ajout de données à la feuille de calcul...');
 
             var spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
-            var range = 'scan';
+            var range = 'enregistrement';
             var apiKey = 'AIzaSyDuSVZIxItzg1u85BS2LPyFo9ovSXQ54pw';  // Remplacez par votre clé API Google Sheets
 
             var url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append`;
@@ -64,27 +62,18 @@
             };
 
             axios.post(url, params, {
-                    params: {
-                        key: apiKey,
-                        valueInputOption: 'RAW',
-                    },
-                })
-                .then(function (response) {
-                    console.log('Données ajoutées avec succès :', response.data);
-                })
-                .catch(function (error) {
-                    console.error('Erreur lors de l\'ajout des données :', error.response.data);
-                });
+                params: {
+                    key: apiKey,
+                    valueInputOption: 'RAW',
+                },
+            })
+            .then(function (response) {
+                console.log('Données ajoutées avec succès :', response.data);
+            })
+            .catch(function (error) {
+                console.error('Erreur lors de l\'ajout des données :', error.response.data);
+            });
         }
-
-        // Start scanning
-        scanStart(function (data) {
-            // Supposons que les données scannées soient une adresse e-mail
-            appendDataToSheet(data);
-            alert(data);
-        });
     </script>
-
-</body>
-
+  </body>
 </html>
