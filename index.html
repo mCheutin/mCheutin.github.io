@@ -1,20 +1,24 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Emargement JPO</title>
-  </head>
-  
-  <body class="cont">
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body class="cont">
     <h3 class="txt-cntr mar-top-2">JPO du 09/12/23</h3>
 
     <article class="pad-2">
         <section>
             <div class="frm-grp txt-cntr">
-                <label class="disp-blck">Choose camera:</label>
+                <label class="disp-blck">Choisissez la caméra :</label>
                 <select id="webcameraChanger" onchange="cameraChange($(this).val());" class="frm-ctrl mar-btm-2"></select>
             </div>
+            <!-- Composant de vue de la caméra Web -->
             <video id="webcameraPreview" playsinline autoplay controls muted loop style="width: 100%;"></video>
         </section>
     </article>
@@ -23,11 +27,13 @@
     <script type="text/javascript" src="../../external/adapter.min.js"></script>
     <script type="text/javascript" src="../../external/instascan.js"></script>
     <script type="text/javascript" src="../../src/QrCodeScanner.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type="text/javascript">
+        // HTML video component for web camera
         var videoComponent = $("#webcameraPreview");
+        // HTML select component for cameras change
         var webcameraChanger = $("#webcameraChanger");
         var options = {};
+        // init options for scanner
         options = initVideoObjectOptions("webcameraPreview");
         var cameraId = 0;
 
@@ -42,19 +48,46 @@
 
         initCamera(cameraId);
 
-        scanStart(function (data){
-            appendDataToSheet(data);
-        });
+        // Client ID et client secret de votre projet Google Cloud
+        var clientId = '549585339883-3p01j2inukmo7nrg9tnpdglisg1splrf.apps.googleusercontent.com';
+        var clientSecret = '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';
 
-        function appendDataToSheet(email) {
+        // ID de votre feuille de calcul
+        var spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
+        var range = 'scan';
+
+        // Définir les paramètres pour l'authentification OAuth
+        var oauthParams = {
+            client_id: clientId,
+            client_secret: clientSecret,
+            scope: 'https://www.googleapis.com/auth/spreadsheets',
+            redirect_uri: 'urn:ietf:wg:oauth:2.0:oob',
+            grant_type: 'authorization_code',
+        };
+
+        // Fonction pour obtenir un jeton d'accès
+        function getAccessToken() {
+            var authCode = prompt('Veuillez entrer le code d\'autorisation :');
+            oauthParams.code = authCode;
+
+            axios.post('https://oauth2.googleapis.com/token', null, {
+                    params: oauthParams,
+                })
+                .then(function (response) {
+                    var accessToken = response.data.access_token;
+                    appendDataToSheet(accessToken);
+                })
+                .catch(function (error) {
+                    console.error('Erreur lors de l\'obtention du jeton d\'accès :', error.response.data);
+                });
+        }
+
+        // Fonction pour ajouter des données à la feuille de calcul
+        function appendDataToSheet(accessToken) {
             console.log('Tentative d\'ajout de données à la feuille de calcul...');
 
-            var spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
-            var range = 'scan';
-            var apiKey = 'AIzaSyDuSVZIxItzg1u85BS2LPyFo9ovSXQ54pw';  // Remplacez par votre clé API Google Sheets
-
             var url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append`;
-            var values = [[email]];
+            var values = [['example@gmail.com']];
 
             var params = {
                 values: values,
@@ -62,18 +95,27 @@
             };
 
             axios.post(url, params, {
-                params: {
-                    key: apiKey,
-                    valueInputOption: 'RAW',
-                },
-            })
-            .then(function (response) {
-                console.log('Données ajoutées avec succès :', response.data);
-            })
-            .catch(function (error) {
-                console.error('Erreur lors de l\'ajout des données :', error.response.data);
-            });
+                    headers: {
+                        Authorization: 'Bearer ' + accessToken,
+                    },
+                    params: {
+                        valueInputOption: 'RAW',
+                    },
+                })
+                .then(function (response) {
+                    console.log('Données ajoutées avec succès :', response.data);
+                })
+                .catch(function (error) {
+                    console.error('Erreur lors de l\'ajout des données :', error.response.data);
+                });
         }
+
+        // Démarrer le scan
+        scanStart(function (data) {
+            // Supposons que les données scannées soient une adresse e-mail
+            getAccessToken();
+        });
     </script>
-  </body>
+</body>
+
 </html>
