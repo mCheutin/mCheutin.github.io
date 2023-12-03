@@ -25,7 +25,6 @@
     <script type="text/javascript" src="../../external/adapter.min.js"></script>
     <script type="text/javascript" src="../../external/instascan.js"></script>
     <script type="text/javascript" src="../../src/QrCodeScanner.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <script type="text/javascript">
         var videoComponent = $("#webcameraPreview");
@@ -50,33 +49,56 @@
         // Initialise la caméra sélectionnée
         initCamera(cameraId);
 
-        function appendDataToSheet(email) {
-            // ID de votre feuille de calcul
+        // Fonction pour obtenir le jeton d'accès OAuth2
+        function getAccessToken() {
+            // Remplacez les valeurs suivantes par celles de votre application OAuth2
+            var clientId = 'VOTRE_ID_CLIENT';
+            var redirectUri = 'VOTRE_URI_DE_REDIRECTION';
+            var authUrl = 'https://accounts.google.com/o/oauth2/auth';
+
+            // Construire l'URL d'autorisation
+            var authParams = {
+                client_id: clientId,
+                redirect_uri: redirectUri,
+                response_type: 'token',
+                scope: 'https://www.googleapis.com/auth/spreadsheets',
+            };
+
+            var authUrlWithParams = authUrl + '?' + Object.entries(authParams).map(pair => pair.join('=')).join('&');
+
+            // Rediriger l'utilisateur vers la page d'autorisation
+            window.location.href = authUrlWithParams;
+        }
+
+        // Fonction appelée après l'autorisation, analyse le jeton d'accès de l'URL
+        function handleAccessToken() {
+            var accessToken = window.location.hash.substr(1).split('&')[0].split('=')[1];
+
+            // Utilisez l'accessToken dans vos requêtes API
+            console.log('Access Token:', accessToken);
+
+            // Appel de votre fonction d'ajout de données à la feuille
+            appendDataToSheet('test@gmail.com', accessToken);
+        }
+
+        // Fonction pour ajouter des données à la feuille
+        function appendDataToSheet(email, accessToken) {
             var spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
-            // URL de l'API Google Sheets
-            var sheetsAPIUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetId + '/values/scan:append';
+            var sheetsAPIUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetId + '/values/enregistrement:append';
 
-            // Clé API
-            var apiKey = 'AIzaSyDuSVZIxItzg1u85BS2LPyFo9ovSXQ54pw';
-
-            // Données à ajouter
             var values = [
                 [email]
             ];
 
-            // Corps de la requête
             var requestBody = {
                 values: values
             };
 
-            // Paramètres de la requête
-            var params = {
-                key: apiKey,
-                valueInputOption: 'RAW'
+            var headers = {
+                Authorization: 'Bearer ' + accessToken
             };
 
-            // Effectuer la requête POST avec axios
-            axios.post(sheetsAPIUrl, requestBody, { params: params })
+            axios.post(sheetsAPIUrl, requestBody, { headers: headers })
                 .then(function (response) {
                     console.log('Données ajoutées avec succès :', response.data);
                 })
@@ -88,8 +110,14 @@
         // Démarre la numérisation
         scanStart(function (data) {
             // Supposons que les données scannées soient une adresse e-mail
-            appendDataToSheet(data);
+            // Redirigez l'utilisateur vers la page d'autorisation OAuth2 après la numérisation
+            getAccessToken();
         });
+
+        // Vérifiez si l'utilisateur a été redirigé après l'autorisation
+        if (window.location.hash) {
+            handleAccessToken();
+        }
     </script>
 </body>
 </html>
