@@ -1,22 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
+    <!-- Required meta tags -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Emargement JPO</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-</head>
-
-<body class="cont">
+  </head>
+  
+  <body class="cont">
+    
     <h3 class="txt-cntr mar-top-2">JPO du 09/12/23</h3>
 
     <article class="pad-2">
         <section>
             <div class="frm-grp txt-cntr">
-                <label class="disp-blck">Choisissez la caméra :</label>
+                <label class="disp-blck">Choose camera:</label>
                 <select id="webcameraChanger" onchange="cameraChange($(this).val());" class="frm-ctrl mar-btm-2"></select>
             </div>
-            <!-- Composant de vue de la caméra Web -->
+            <!-- web camera view component -->
             <video id="webcameraPreview" playsinline autoplay controls muted loop style="width: 100%;"></video>
         </section>
     </article>
@@ -25,20 +26,18 @@
     <script type="text/javascript" src="../../external/adapter.min.js"></script>
     <script type="text/javascript" src="../../external/instascan.js"></script>
     <script type="text/javascript" src="../../src/QrCodeScanner.js"></script>
-
     <script type="text/javascript">
+        // HTML video component for web camera
         var videoComponent = $("#webcameraPreview");
+        // HTML select component for cameras change
         var webcameraChanger = $("#webcameraChanger");
         var options = {};
+        // init options for scanner
+        options = initVideoObjectOptions("webcameraPreview");
         var cameraId = 0;
 
-        // Initialise les options pour le scanner
-        options = initVideoObjectOptions("webcameraPreview");
-
-        // Initialise le scanner
         initScanner(options);
 
-        // Initialise les caméras disponibles
         initAvaliableCameras(
             webcameraChanger,
             function () {
@@ -46,78 +45,28 @@
             }
         );
 
-        // Initialise la caméra sélectionnée
         initCamera(cameraId);
 
-        // Fonction pour obtenir le jeton d'accès OAuth2
-        function getAccessToken() {
-            // Remplacez les valeurs suivantes par celles de votre application OAuth2
-            var clientId = 'VOTRE_ID_CLIENT';
-            var redirectUri = 'VOTRE_URI_DE_REDIRECTION';
-            var authUrl = 'https://accounts.google.com/o/oauth2/auth';
-
-            // Construire l'URL d'autorisation
-            var authParams = {
-                client_id: clientId,
-                redirect_uri: redirectUri,
-                response_type: 'token',
-                scope: 'https://www.googleapis.com/auth/spreadsheets',
-            };
-
-            var authUrlWithParams = authUrl + '?' + Object.entries(authParams).map(pair => pair.join('=')).join('&');
-
-            // Rediriger l'utilisateur vers la page d'autorisation
-            window.location.href = authUrlWithParams;
+        function postEmailAddressToSheet(email) {
+            $.ajax({
+                url: 'https://script.google.com/macros/s/AKfycbwlK4S0yc3qjXuH2DAfnxxPGeZXq6FTHn_UeVaaVTboOGcir7c5W6XqdEmrGVaOkBHx/exec',
+                type: 'POST',
+                data: { email: email },
+                success: function (response) {
+                    console.log(response);
+                },
+                error: function (error) {
+                    console.error('Error:', error);
+                },
+            });
         }
 
-        // Fonction appelée après l'autorisation, analyse le jeton d'accès de l'URL
-        function handleAccessToken() {
-            var accessToken = window.location.hash.substr(1).split('&')[0].split('=')[1];
-
-            // Utilisez l'accessToken dans vos requêtes API
-            console.log('Access Token:', accessToken);
-
-            // Appel de votre fonction d'ajout de données à la feuille
-            appendDataToSheet('test@gmail.com', accessToken);
-        }
-
-        // Fonction pour ajouter des données à la feuille
-        function appendDataToSheet(email, accessToken) {
-            var spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
-            var sheetsAPIUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetId + '/values/enregistrement:append';
-
-            var values = [
-                [email]
-            ];
-
-            var requestBody = {
-                values: values
-            };
-
-            var headers = {
-                Authorization: 'Bearer ' + accessToken
-            };
-
-            axios.post(sheetsAPIUrl, requestBody, { headers: headers })
-                .then(function (response) {
-                    console.log('Données ajoutées avec succès :', response.data);
-                })
-                .catch(function (error) {
-                    console.error('Erreur lors de l\'ajout des données :', error.response.data.error.message);
-                });
-        }
-
-        // Démarre la numérisation
         scanStart(function (data) {
-            // Supposons que les données scannées soient une adresse e-mail
-            // Redirigez l'utilisateur vers la page d'autorisation OAuth2 après la numérisation
-            getAccessToken();
+            // Assuming the scanned data is an email address
+            postEmailAddressToSheet(data);
+            alert(data + " a bien été enregistré");
         });
-
-        // Vérifiez si l'utilisateur a été redirigé après l'autorisation
-        if (window.location.hash) {
-            handleAccessToken();
-        }
     </script>
-</body>
+
+  </body>
 </html>
