@@ -1,64 +1,4 @@
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-    <!-- Balises meta requises -->
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Émargement JPO</title>
-
-    <!-- Ajout de la bibliothèque gapi -->
-    <script src="https://apis.google.com/js/api.js"></script>
-</head>
-<body class="cont">
-    <h3 class="txt-cntr mar-top-2">JPO du 09/12/23</h3>
-
-    <article class="pad-2">
-        <section>
-            <div class="frm-grp txt-cntr">
-                <label class="disp-blck">Choisissez la caméra :</label>
-                <select id="webcameraChanger" onchange="cameraChange($(this).val());" class="frm-ctrl mar-btm-2"></select>
-            </div>
-            <!-- Composant de visualisation de la caméra Web -->
-            <video id="webcameraPreview" playsinline autoplay controls muted loop style="width: 100%;"></video>
-        </section>
-    </article>
-
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="../../external/adapter.min.js"></script>
-    <script type="text/javascript" src="../../external/instascan.js"></script>
-    <script type="text/javascript" src="../../src/QrCodeScanner.js"></script>
-    <script type="text/javascript">
-       // Composant vidéo HTML pour la caméra Web
-       var videoComponent = $("#webcameraPreview");
-        // Composant de sélection HTML pour le changement de caméras
-        var webcameraChanger = $("#webcameraChanger");
-        var options = {};
-        // Initialiser les options du scanner vidéo
-        options = initVideoObjectOptions("webcameraPreview");
-        var cameraId = 0;
-
-        initScanner(options);
-
-        initAvaliableCameras(
-            webcameraChanger,
-            function () {
-                cameraId = parseInt(getSelectedCamera(webcameraChanger));
-            }
-        );
-
-        initCamera(cameraId);
-
-        scanStart(function (data) {
-            // Supposons que les données scannées sont l'adresse e-mail
-            const email = data;
-            
-            // Mettre à jour la case à cocher dans Google Sheets
-            updateCheckbox(email);
-            alert("Scanné avec succès")
-        });
-
-
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -126,24 +66,27 @@
                 var spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
                 // Fonction pour ajouter des données à la feuille de calcul
                 function appendDataToSheet(email) {
+                    console.log('Tentative d\'ajout de données à la feuille de calcul...');
+                    
                     var values = [
                         [email]
                     ];
+                    
                     var body = {
                         values: values
                     };
+                    
                     gapi.client.sheets.spreadsheets.values.append({
                         spreadsheetId: spreadsheetId,
-                        range: 'scan', // Changez avec le nom de votre feuille
+                        range: 'scan',
                         valueInputOption: 'RAW',
                         resource: body
                     }).then(function (response) {
-                        console.log(response);
+                        console.log('Données ajoutées avec succès :', response);
                     }, function (reason) {
-                        console.error('Erreur : ' + reason.result.error.message);
+                        console.error('Erreur lors de l\'ajout des données :', reason.result.error.message);
                     });
                 }
-
                 // Démarre la numérisation
                 scanStart(function (data) {
                     // Supposons que les données scannées soient une adresse e-mail
