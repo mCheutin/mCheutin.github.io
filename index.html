@@ -1,88 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scanner QR Code</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>QR Code Scanner Example</title>
 
-        #qr-video {
-            width: 100%;
-            max-width: 400px;
-            transform: scaleX(-1); /* Inverser la vidéo pour obtenir une vue miroir */
-        }
-    </style>
-</head>
-<body>
-    <video id="qr-video" playsinline></video>
+	
+  </head>
+  
+  <body class="cont">
+    
+    <h3 class="txt-cntr mar-top-2">Simple QR Code Scanner Example</h3>
 
-    <script>
-        // Fonction pour initialiser le scanner de QR code
-        function initQRCodeScanner() {
-            const video = document.getElementById('qr-video');
+    <article class="pad-2">
+        <section>
+            <div class="frm-grp txt-cntr">
+				<label class="disp-blck">Choose camera:</label>
+				<select id="webcameraChanger" onchange="cameraChange($(this).val());" class="frm-ctrl mar-btm-2"></select>
+			</div>
+            <!-- webcamera view component -->
+            <video id="webcameraPreview" playsinline autoplay controls muted loop style="width: 100%;"></video>
+        </section>
+    </article>
 
-            // Vérifier si le navigateur prend en charge l'API getUserMedia
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                    .then((stream) => {
-                        // Afficher la vidéo de la caméra dans l'élément video
-                        video.srcObject = stream;
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="../../external/adapter.min.js"></script>
+    <script type="text/javascript" src="../../external/instascan.js"></script>
+    <script type="text/javascript" src="../../src/QrCodeScanner.js"></script>
+    <script type="text/javascript">
+        //HTML video component for web camera
+        var videoComponent = $("#webcameraPreview");
+        //HTML select component for cameras change
+        var webcameraChanger = $("#webcameraChanger");
+        var options = {};
+        //init options for scanner
+        options = initVideoObjectOptions("webcameraPreview");
+        var cameraId = 0;
 
-                        // Lorsque la vidéo est chargée, démarrer le scanner QR code
-                        video.onloadedmetadata = () => {
-                            video.play();
-                            startQRCodeScanner(video);
-                        };
-                    })
-                    .catch((error) => {
-                        console.error('Erreur lors de l\'accès à la caméra: ', error);
-                    });
-            } else {
-                alert('Votre navigateur ne prend pas en charge l\'API getUserMedia.');
+        initScanner(options);
+
+        initAvaliableCameras(
+            webcameraChanger,
+            function () {
+                cameraId = parseInt(getSelectedCamera(webcameraChanger));
             }
-        }
+        );
 
-        // Fonction pour démarrer le scanner QR code
-        function startQRCodeScanner(video) {
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
+        initCamera(cameraId);
 
-            // Définir la taille du canvas en fonction de la vidéo
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
 
-            const qrWorker = new Worker('jsQR.js'); // Chargement du worker jsQR
+        scanStart(function (data){
+            alert(data);
+        });
 
-            qrWorker.onmessage = (event) => {
-                if (event.data) {
-                    alert('QR Code scanné. Contenu: ' + event.data);
-                }
-            };
-
-            // Capture de l'image de la vidéo et détection du QR code
-            function captureFrame() {
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                qrWorker.postMessage(imageData);
-                requestAnimationFrame(captureFrame);
-            }
-
-            // Démarrer la capture d'images
-            requestAnimationFrame(captureFrame);
-        }
-
-        // Charger la bibliothèque jsQR
-        const jsQRScript = document.createElement('script');
-        jsQRScript.src = 'jsQR.js'; // Remplacez 'jsQR.js' par le chemin de votre fichier jsQR
-        jsQRScript.onload = initQRCodeScanner;
-        document.head.appendChild(jsQRScript);
     </script>
-</body>
+
+  </body>
 </html>
