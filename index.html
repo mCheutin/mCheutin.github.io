@@ -1,12 +1,20 @@
+D'accord, je vais simplifier le code en utilisant une autre bibliothèque pour effectuer la requête vers l'API Google Sheets. Nous allons utiliser la bibliothèque `axios` pour effectuer une requête HTTP POST vers l'API Google Sheets.
+
+Assurez-vous d'ajouter la bibliothèque `axios` à votre projet en incluant la balise script suivante dans votre en-tête HTML ou en installant la bibliothèque via npm ou yarn.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+```
+
+Voici une version modifiée du code pour écrire dans la feuille "enregistrement" de votre spreadsheet. Remplacez également 'VOTRE_CLÉ_API' par votre clé API.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Emargement JPO</title>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body class="cont">
@@ -27,18 +35,21 @@
     <script type="text/javascript" src="../../external/adapter.min.js"></script>
     <script type="text/javascript" src="../../external/instascan.js"></script>
     <script type="text/javascript" src="../../src/QrCodeScanner.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <script type="text/javascript">
-        // HTML video component for web camera
         var videoComponent = $("#webcameraPreview");
-        // HTML select component for cameras change
         var webcameraChanger = $("#webcameraChanger");
         var options = {};
-        // init options for scanner
-        options = initVideoObjectOptions("webcameraPreview");
         var cameraId = 0;
 
+        // Initialise les options pour le scanner
+        options = initVideoObjectOptions("webcameraPreview");
+
+        // Initialise le scanner
         initScanner(options);
 
+        // Initialise les caméras disponibles
         initAvaliableCameras(
             webcameraChanger,
             function () {
@@ -46,76 +57,52 @@
             }
         );
 
+        // Initialise la caméra sélectionnée
         initCamera(cameraId);
 
-        // Client ID et client secret de votre projet Google Cloud
-        var clientId = '549585339883-3p01j2inukmo7nrg9tnpdglisg1splrf.apps.googleusercontent.com';
-        var clientSecret = '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';
+        function appendDataToSheet(email) {
+            // ID de votre feuille de calcul
+            var spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
+            // URL de l'API Google Sheets
+            var sheetsAPIUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetId + '/values/scan:append';
 
-        // ID de votre feuille de calcul
-        var spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
-        var range = 'scan';
+            // Clé API
+            var apiKey = 'AIzaSyDuSVZIxItzg1u85BS2LPyFo9ovSXQ54pw';
 
-        // Définir les paramètres pour l'authentification OAuth
-        var oauthParams = {
-            client_id: clientId,
-            client_secret: clientSecret,
-            scope: 'https://www.googleapis.com/auth/spreadsheets',
-            redirect_uri: 'urn:ietf:wg:oauth:2.0:oob',
-            grant_type: 'authorization_code',
-        };
+            // Données à ajouter
+            var values = [
+                [email]
+            ];
 
-        // Fonction pour obtenir un jeton d'accès
-        function getAccessToken() {
-            var authCode = prompt('Veuillez entrer le code d\'autorisation :');
-            oauthParams.code = authCode;
-
-            axios.post('https://oauth2.googleapis.com/token', null, {
-                    params: oauthParams,
-                })
-                .then(function (response) {
-                    var accessToken = response.data.access_token;
-                    appendDataToSheet(accessToken);
-                })
-                .catch(function (error) {
-                    console.error('Erreur lors de l\'obtention du jeton d\'accès :', error.response.data);
-                });
-        }
-
-        // Fonction pour ajouter des données à la feuille de calcul
-        function appendDataToSheet(accessToken) {
-            console.log('Tentative d\'ajout de données à la feuille de calcul...');
-
-            var url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append`;
-            var values = [['example@gmail.com']];
-
-            var params = {
-                values: values,
-                majorDimension: 'ROWS',
+            // Corps de la requête
+            var requestBody = {
+                values: values
             };
 
-            axios.post(url, params, {
-                    headers: {
-                        Authorization: 'Bearer ' + accessToken,
-                    },
-                    params: {
-                        valueInputOption: 'RAW',
-                    },
-                })
+            // Paramètres de la requête
+            var params = {
+                key: apiKey,
+                valueInputOption: 'RAW'
+            };
+
+            // Effectuer la requête POST avec axios
+            axios.post(sheetsAPIUrl, requestBody, { params: params })
                 .then(function (response) {
                     console.log('Données ajoutées avec succès :', response.data);
                 })
                 .catch(function (error) {
-                    console.error('Erreur lors de l\'ajout des données :', error.response.data);
+                    console.error('Erreur lors de l\'ajout des données :', error.response.data.error.message);
                 });
         }
 
-        // Démarrer le scan
+        // Démarre la numérisation
         scanStart(function (data) {
             // Supposons que les données scannées soient une adresse e-mail
-            getAccessToken();
+            appendDataToSheet(data);
         });
     </script>
 </body>
-
 </html>
+```
+
+Cette version utilise la bibliothèque axios pour effectuer une requête HTTP POST vers l'API Google Sheets. Assurez-vous de remplacer 'VOTRE_CLÉ_API' par votre clé API. Si vous rencontrez des problèmes, consultez la console du navigateur pour voir les messages d'erreur.
