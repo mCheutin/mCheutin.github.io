@@ -31,10 +31,10 @@
     <!-- Ajouter d'autres scripts nécessaires pour le QR Code Scanner -->
 </head>
 <body>
-    <h1>Emargement 09/12/23</h1>
+    <h1>QR Code Scanner</h1>
     
     <div id="preview-container">
-        <video id="qr-video" width="100%" height="100%" style="object-fit: cover;"></video>
+        <video id="qr-video" width="100%" height="100%" style="object-fit: cover;" playsinline></video>
         <canvas id="qr-preview" style="display: none;"></canvas>
         <span id="checkbox-icon">&#10003;</span>
     </div>
@@ -148,9 +148,15 @@
         // Load the Google API client library on window load
         window.onload = function () {
             loadGoogleApiClient();
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                .then(onSuccess)
-                .catch(onError);
+            
+            // Check if the browser supports the MediaDevices API
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(onSuccess)
+                    .catch(onError);
+            } else {
+                console.error('MediaDevices API is not supported in this browser.');
+            }
         };
     </script>
     <script src="https://apis.google.com/js/api.js"></script>
