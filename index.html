@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="bundle.css">
     <link rel="preload" as="script" href="decoder.js">
     <script data-ad-client="ca-pub-8317178183177647" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   </head>
   <body>
     <div class="app__layout">
@@ -35,7 +36,7 @@
         <!-- Dialog for result  -->
         <div class="app__dialog app__dialog--hide">
           <div class="app__dialog-content">
-            <h1>QR Code</h1>
+            <h1>09/12/23</h1>
             <input type="text" id="result">
           </div>
           <div class="app__dialog-actions">
@@ -76,14 +77,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-JV7CRR9FCT"></script>
     <script>
-      if (location.hostname !== "localhost") {
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-JV7CRR9FCT');
-      }
-    function updateGoogleSheet(email) {
+      function updateGoogleSheet(email) {
         const apiKey = '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';
         const clientId = '549585339883-3p01j2inukmo7nrg9tnpdglisg1splrf.apps.googleusercontent.com';
         const spreadsheetId = '1gvvhXBmO_0rPJvCNYiO9yXBgd2PRjNTw1PKlwE-3dqQ';
@@ -126,6 +120,15 @@
         }).catch((error) => {
           console.error('Erreur lors de la récupération des données de la feuille de calcul:', error);
         });
+      }
+    </script>
+    <script>
+      if (location.hostname !== "localhost") {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-JV7CRR9FCT');
       }
     </script>
     <script async src="https://cdn.jsdelivr.net/npm/pwacompat@2.0.6/pwacompat.min.js" integrity="sha384-GOaSLecPIMCJksN83HLuYf9FToOiQ2Df0+0ntv7ey8zjUHESXhthwvq9hXAZTifA"
