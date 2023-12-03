@@ -108,6 +108,9 @@
 
         // Initialise la caméra sélectionnée
         initCamera(cameraId);
+        scanStart(function (data) {
+            alert(data+ " a été enregistré avec succès")
+        });
 
         // Initialise l'API Google Sheets
         gapi.load('client', initSheetsAPI);
