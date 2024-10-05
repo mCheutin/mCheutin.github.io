@@ -50,7 +50,7 @@
         function postEmailAddressToSheet(email) {
             $.ajax({
                 url: 'https://script.google.com/macros/s/AKfycbwDLx5DCOwhojIChqZbPHA1RQOA5rUZqrFsulRR5Rl2RBsuXyV8BGid21RCfW6KOy6F/exec',
-                type: 'GET',
+                type: 'POST',
                 data: { email: email },
                 success: function (response) {
                     console.log(response);
